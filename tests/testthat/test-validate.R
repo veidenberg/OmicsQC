@@ -1,7 +1,6 @@
 test_that("custom validate rules can fail sample summaries", {
   result <- run_qc_pipeline(
     matrix_path = test_path("fixtures", "clean_assay.tsv"),
-    metadata_path = test_path("fixtures", "clean_metadata.tsv"),
     include_default_rules = FALSE,
     rule_files = test_path("fixtures", "strict_rules.yaml")
   )

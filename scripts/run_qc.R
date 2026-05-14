@@ -1,9 +1,9 @@
 #!/usr/bin/env Rscript
 
 args <- commandArgs(trailingOnly = TRUE)
-if (length(args) < 3) {
+if (length(args) < 2) {
   cat(
-    "Usage: Rscript scripts/run_qc.R <assay.tsv|csv> <metadata.tsv|csv> <output_dir> [rule.yaml ...]\n",
+    "Usage: Rscript scripts/run_qc.R <assay.tsv> <output_dir> [rule.yaml ...]\n",
     file = stderr()
   )
   quit(status = 1)
@@ -25,12 +25,11 @@ invisible(lapply(r_files, source))
 
 result <- run_qc_pipeline(
   matrix_path = args[[1]],
-  metadata_path = args[[2]],
-  rule_files = if (length(args) > 3) args[4:length(args)] else NULL
+  rule_files = if (length(args) > 2) args[3:length(args)] else NULL
 )
 
 print(result)
-outputs <- write_qc_outputs(result, output_dir = args[[3]])
+outputs <- write_qc_outputs(result, output_dir = args[[2]])
 cat("Outputs written to:", outputs$output_dir, "\n")
 
 quit(status = if (identical(result$status, "pass")) 0 else 1)

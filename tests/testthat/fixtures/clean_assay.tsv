@@ -1,5 +1,7 @@
-feature_id	sample_1	sample_2	sample_3
-gene_a	10	0	4
-gene_b	5	2	0
-gene_c	0	1	3
-gene_d	8	3	7
+feature_id	sample_1	sample_2	sample_3	sample_4
+gene_a	10	0	4	NA
+gene_b	5	2	0	1
+gene_c	0	1	3	0
+gene_d	8	3	7	2
+gene_e	0	0	0	0
+gene_f	9	11	10	12

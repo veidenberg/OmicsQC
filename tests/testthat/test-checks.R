@@ -1,38 +1,22 @@
-test_that("duplicate metadata IDs fail built-in checks", {
+test_that("sample filters remove samples with excessive missingness or zeros", {
   result <- run_qc_pipeline(
     matrix_path = test_path("fixtures", "clean_assay.tsv"),
-    metadata_path = test_path("fixtures", "duplicate_metadata.tsv"),
-    include_default_rules = FALSE
+    include_default_rules = FALSE,
+    sample_max_missing_fraction = 0.15,
+    sample_max_zero_fraction = 0.7
   )
 
-  duplicate_row <- result$built_in_checks[
-    result$built_in_checks$check == "duplicate_metadata_sample_ids",
-    ,
-    drop = FALSE
-  ]
-
-  expect_identical(result$status, "fail")
-  expect_equal(duplicate_row$status, "fail")
-  expect_match(duplicate_row$items, "sample_2")
-  expect_null(result$sample_qc)
+  expect_true("sample_4" %in% result$removed$samples$sample_id)
+  expect_true(!("sample_4" %in% colnames(result$filtered$assay)))
 })
 
-test_that("sample mismatches are reported separately from duplicates", {
+test_that("feature filters remove features with excessive zeros", {
   result <- run_qc_pipeline(
     matrix_path = test_path("fixtures", "clean_assay.tsv"),
-    metadata_path = test_path("fixtures", "mismatch_metadata.tsv"),
-    include_default_rules = FALSE
+    include_default_rules = FALSE,
+    feature_max_zero_fraction = 0.8
   )
 
-  mismatch_row <- result$built_in_checks[
-    result$built_in_checks$check == "sample_id_mismatch",
-    ,
-    drop = FALSE
-  ]
-
-  expect_identical(result$status, "fail")
-  expect_equal(mismatch_row$status, "fail")
-  expect_match(mismatch_row$detail, "Missing in metadata")
-  expect_match(mismatch_row$detail, "sample_3")
-  expect_match(mismatch_row$detail, "sample_4")
+  expect_true("gene_e" %in% result$removed$features$feature_id)
+  expect_true(!("gene_e" %in% rownames(result$filtered$assay)))
 })

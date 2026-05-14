@@ -45,13 +45,19 @@ default_rule_file_path <- function() {
     return(installed_path)
   }
 
+  installed_tmp_path <- system.file("tmp", "validate", "base_rules.yaml", package = "OmicsQC")
+  if (nzchar(installed_tmp_path)) {
+    return(installed_tmp_path)
+  }
+
   candidate_paths <- character()
 
   package_root_option <- getOption("OmicsQC.package_root", "")
   if (nzchar(package_root_option)) {
     candidate_paths <- c(
       candidate_paths,
-      file.path(package_root_option, "inst", "validate", "base_rules.yaml")
+      file.path(package_root_option, "inst", "validate", "base_rules.yaml"),
+      file.path(package_root_option, "tmp", "validate", "base_rules.yaml")
     )
   }
 
@@ -59,7 +65,8 @@ default_rule_file_path <- function() {
   if (nzchar(detected_root)) {
     candidate_paths <- c(
       candidate_paths,
-      file.path(detected_root, "inst", "validate", "base_rules.yaml")
+      file.path(detected_root, "inst", "validate", "base_rules.yaml"),
+      file.path(detected_root, "tmp", "validate", "base_rules.yaml")
     )
   }
 
