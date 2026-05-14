@@ -1,0 +1,18 @@
+Package: CVDLINK OmicsQC
+Type: Package
+Title: Simple omics quality control pipeline
+Version: 0.1.0
+Author: Urmo Võsa, Andres Veidenberg
+Maintainer: Andres Veidenberg <andres.veidenberg@gmail.com>
+Description: Provides a lightweight quality control workflow for generic omics
+    assay matrices and sample metadata. The package runs built-in sanity
+    checks, calculates sample-level QC summaries, and integrates validate rule
+    files so project-specific checks can be added without changing code.
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+Imports:
+    validate
+Suggests:
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3

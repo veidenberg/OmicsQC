@@ -1,0 +1,8 @@
+.DS_Store
+.RData
+.Rhistory
+.Rproj.user
+*.Rproj
+*.tar.gz
+OmicsQC.Rcheck/
+tmp/

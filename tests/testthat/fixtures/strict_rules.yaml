@@ -1,0 +1,8 @@
+rules:
+  - expr: detected_features >= 4
+    name: detected_features_floor
+    label: Minimum detected feature count
+    description: |
+      Every sample should have at least four detected features.
+    meta:
+      severity: error
