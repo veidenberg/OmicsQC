@@ -38,7 +38,7 @@ combine_check_frames <- function(frames) {
 }
 
 compute_zero_fraction <- function(assay_matrix) {
-  apply(assay_matrix, 2, function(values) {
+  apply(assay_matrix, 1, function(values) {
     non_missing <- values[!is.na(values)]
     if (!length(non_missing)) {
       return(NA_real_)
@@ -49,7 +49,7 @@ compute_zero_fraction <- function(assay_matrix) {
 }
 
 compute_feature_zero_fraction <- function(assay_matrix) {
-  apply(assay_matrix, 1, function(values) {
+  apply(assay_matrix, 2, function(values) {
     non_missing <- values[!is.na(values)]
     if (!length(non_missing)) {
       return(NA_real_)
@@ -69,7 +69,7 @@ safe_stat <- function(values, fun) {
 }
 
 compute_feature_outlier_fraction <- function(assay_matrix, multiplier = 1.5) {
-  apply(assay_matrix, 1, function(values) {
+  apply(assay_matrix, 2, function(values) {
     observed <- values[!is.na(values)]
     if (length(observed) < 4) {
       return(NA_real_)
@@ -88,7 +88,7 @@ compute_feature_outlier_fraction <- function(assay_matrix, multiplier = 1.5) {
 }
 
 compute_normality_pvalue <- function(assay_matrix) {
-  apply(assay_matrix, 1, function(values) {
+  apply(assay_matrix, 2, function(values) {
     observed <- values[!is.na(values)]
     if (length(observed) < 3 || length(observed) > 5000 || length(unique(observed)) < 3) {
       return(NA_real_)
@@ -114,12 +114,12 @@ build_dataset_qc <- function(inputs) {
       "feature_zero_fraction_median"
     ),
     value = c(
-      nrow(assay_matrix),
       ncol(assay_matrix),
+      nrow(assay_matrix),
       mean(is.na(assay_matrix)),
       if (!length(observed)) NA_real_ else sum(observed == 0) / length(observed),
-      stats::median(colMeans(is.na(assay_matrix))),
       stats::median(rowMeans(is.na(assay_matrix))),
+      stats::median(colMeans(is.na(assay_matrix))),
       stats::median(compute_zero_fraction(assay_matrix), na.rm = TRUE),
       stats::median(compute_feature_zero_fraction(assay_matrix), na.rm = TRUE)
     ),
@@ -130,12 +130,12 @@ build_dataset_qc <- function(inputs) {
 build_sample_qc_table <- function(inputs) {
   data.frame(
     sample_id = inputs$sample_ids,
-    total_signal = colSums(inputs$assay, na.rm = TRUE),
-    detected_features = colSums(!is.na(inputs$assay) & inputs$assay > 0),
-    missing_fraction = colMeans(is.na(inputs$assay)),
+    total_signal = rowSums(inputs$assay, na.rm = TRUE),
+    detected_features = rowSums(!is.na(inputs$assay) & inputs$assay > 0),
+    missing_fraction = rowMeans(is.na(inputs$assay)),
     zero_fraction = compute_zero_fraction(inputs$assay),
-    mean_signal = apply(inputs$assay, 2, safe_stat, fun = mean),
-    median_signal = apply(inputs$assay, 2, safe_stat, fun = stats::median),
+    mean_signal = apply(inputs$assay, 1, safe_stat, fun = mean),
+    median_signal = apply(inputs$assay, 1, safe_stat, fun = stats::median),
     stringsAsFactors = FALSE,
     check.names = FALSE
   )
@@ -146,16 +146,16 @@ build_feature_qc_table <- function(inputs, normality_enforcement = FALSE) {
   normality_pvalue <- if (isTRUE(normality_enforcement)) {
     compute_normality_pvalue(assay_matrix)
   } else {
-    rep(NA_real_, nrow(assay_matrix))
+    rep(NA_real_, ncol(assay_matrix))
   }
 
   data.frame(
     feature_id = inputs$feature_ids,
-    missing_fraction = rowMeans(is.na(assay_matrix)),
+    missing_fraction = colMeans(is.na(assay_matrix)),
     zero_fraction = compute_feature_zero_fraction(assay_matrix),
-    mean_signal = apply(assay_matrix, 1, safe_stat, fun = mean),
-    median_signal = apply(assay_matrix, 1, safe_stat, fun = stats::median),
-    sd_signal = apply(assay_matrix, 1, safe_stat, fun = stats::sd),
+    mean_signal = apply(assay_matrix, 2, safe_stat, fun = mean),
+    median_signal = apply(assay_matrix, 2, safe_stat, fun = stats::median),
+    sd_signal = apply(assay_matrix, 2, safe_stat, fun = stats::sd),
     outlier_fraction = compute_feature_outlier_fraction(assay_matrix),
     normality_pvalue = normality_pvalue,
     stringsAsFactors = FALSE,
@@ -325,11 +325,11 @@ evaluate_feature_filters <- function(
 }
 
 filter_assay_matrix <- function(inputs, sample_filters, feature_filters) {
-  assay_matrix <- inputs$assay[feature_filters$keep_mask, sample_filters$keep_mask, drop = FALSE]
+  assay_matrix <- inputs$assay[sample_filters$keep_mask, feature_filters$keep_mask, drop = FALSE]
 
   list(
     assay = assay_matrix,
-    sample_ids = colnames(assay_matrix),
-    feature_ids = rownames(assay_matrix)
+    sample_ids = rownames(assay_matrix),
+    feature_ids = colnames(assay_matrix)
   )
 }

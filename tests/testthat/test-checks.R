@@ -7,7 +7,7 @@ test_that("sample filters remove samples with excessive missingness or zeros", {
   )
 
   expect_true("sample_4" %in% result$removed$samples$sample_id)
-  expect_true(!("sample_4" %in% colnames(result$filtered$assay)))
+  expect_true(!("sample_4" %in% rownames(result$filtered$assay)))
 })
 
 test_that("feature filters remove features with excessive zeros", {
@@ -18,5 +18,5 @@ test_that("feature filters remove features with excessive zeros", {
   )
 
   expect_true("gene_e" %in% result$removed$features$feature_id)
-  expect_true(!("gene_e" %in% rownames(result$filtered$assay)))
+  expect_true(!("gene_e" %in% colnames(result$filtered$assay)))
 })

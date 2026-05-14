@@ -30,7 +30,7 @@ load_feature_links <- function(feature_linking_paths = NULL) {
 }
 
 harmonize_feature_ids <- function(filtered_assay, feature_links) {
-  if (!nrow(filtered_assay)) {
+  if (!ncol(filtered_assay)) {
     return(list(
       assay = filtered_assay,
       summary = data.frame(
@@ -43,19 +43,21 @@ harmonize_feature_ids <- function(filtered_assay, feature_links) {
   }
 
   if (!nrow(feature_links)) {
+    original_feature_ids <- colnames(filtered_assay)
     return(list(
       assay = filtered_assay,
       summary = data.frame(
-        original_feature_id = rownames(filtered_assay),
-        harmonized_feature_id = rownames(filtered_assay),
-        mapping_status = rep("unmapped", nrow(filtered_assay)),
+        original_feature_id = original_feature_ids,
+        harmonized_feature_id = original_feature_ids,
+        mapping_status = rep("unmapped", ncol(filtered_assay)),
         stringsAsFactors = FALSE
       )
     ))
   }
 
   split_links <- split(feature_links$target_feature_id, feature_links$source_feature_id)
-  harmonized_ids <- vapply(rownames(filtered_assay), function(feature_id) {
+  original_feature_ids <- colnames(filtered_assay)
+  harmonized_ids <- vapply(original_feature_ids, function(feature_id) {
     mapped <- unique(split_links[[feature_id]])
     if (!length(mapped) || length(mapped) > 1) {
       return(feature_id)
@@ -63,7 +65,7 @@ harmonize_feature_ids <- function(filtered_assay, feature_links) {
 
     mapped[[1]]
   }, character(1))
-  mapping_status <- vapply(rownames(filtered_assay), function(feature_id) {
+  mapping_status <- vapply(original_feature_ids, function(feature_id) {
     mapped <- unique(split_links[[feature_id]])
     if (!length(mapped)) {
       return("unmapped")
@@ -76,12 +78,12 @@ harmonize_feature_ids <- function(filtered_assay, feature_links) {
     "mapped"
   }, character(1))
 
-  rownames(filtered_assay) <- harmonized_ids
+  colnames(filtered_assay) <- harmonized_ids
 
   list(
     assay = filtered_assay,
     summary = data.frame(
-      original_feature_id = names(mapping_status),
+      original_feature_id = original_feature_ids,
       harmonized_feature_id = harmonized_ids,
       mapping_status = mapping_status,
       stringsAsFactors = FALSE
@@ -92,6 +94,7 @@ harmonize_feature_ids <- function(filtered_assay, feature_links) {
 run_qc_pipeline <- function(
     matrix_path,
     metadata_path = NULL,
+  sample_id_col = NULL,
     feature_id_col = NULL,
     matrix_sep = "\t",
     rule_files = NULL,
@@ -108,6 +111,7 @@ run_qc_pipeline <- function(
     normality_alpha = 0.05) {
   inputs <- load_omics_matrix(
     matrix_path = matrix_path,
+    sample_id_col = sample_id_col,
     feature_id_col = feature_id_col,
     matrix_sep = matrix_sep
   )
@@ -178,7 +182,7 @@ run_qc_pipeline <- function(
       status = if (overall_fail) "fail" else "pass",
       inputs = inputs$paths,
       settings = list(
-        feature_id_col = inputs$feature_id_col,
+        sample_id_col = inputs$sample_id_col,
         include_default_rules = include_default_rules,
         rule_files = rule_files,
         feature_linking_paths = feature_linking_paths,

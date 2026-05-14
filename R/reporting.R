@@ -50,7 +50,7 @@ print.OmicsQCResult <- function(x, ...) {
   }
 
   if (!is.null(x$filtered$assay)) {
-    cat("Filtered assay dimensions:", nrow(x$filtered$assay), "features x", ncol(x$filtered$assay), "samples\n")
+    cat("Filtered assay dimensions:", nrow(x$filtered$assay), "samples x", ncol(x$filtered$assay), "features\n")
   }
 
   if (nrow(x$removed$samples)) {
@@ -132,7 +132,7 @@ write_qc_outputs <- function(result, output_dir) {
 
   if (!is.null(result$filtered$assay)) {
     filtered_export <- data.frame(
-      feature_id = rownames(result$filtered$assay),
+      sample_id = rownames(result$filtered$assay),
       result$filtered$assay,
       check.names = FALSE,
       stringsAsFactors = FALSE

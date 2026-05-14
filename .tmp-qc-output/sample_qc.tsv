@@ -1,0 +1,5 @@
+sample_id	total_signal	detected_features	missing_fraction	zero_fraction	mean_signal	median_signal
+sample_1	32	4	0	0.333333333333333	5.33333333333333	6.5
+sample_2	17	4	0	0.333333333333333	2.83333333333333	1.5
+sample_3	24	4	0	0.333333333333333	4	3.5
+sample_4	15	3	0.166666666666667	0.4	3	1

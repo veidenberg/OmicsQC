@@ -53,9 +53,9 @@ build_input_issues <- function(assay_matrix, feature_ids, sample_ids, non_numeri
   non_numeric_items <- character()
   if (nrow(non_numeric_entries) > 0) {
     non_numeric_items <- paste0(
-      sample_ids[non_numeric_entries[, "col"]],
+      sample_ids[non_numeric_entries[, "row"]],
       "/",
-      feature_ids[non_numeric_entries[, "row"]]
+      feature_ids[non_numeric_entries[, "col"]]
     )
   }
 
@@ -68,7 +68,7 @@ build_input_issues <- function(assay_matrix, feature_ids, sample_ids, non_numeri
       detail = if (nrow(assay_matrix) == 0 || ncol(assay_matrix) == 0) {
         "The assay matrix has no features or no samples."
       } else {
-        sprintf("Loaded %d features across %d samples.", nrow(assay_matrix), ncol(assay_matrix))
+        sprintf("Loaded %d features across %d samples.", ncol(assay_matrix), nrow(assay_matrix))
       }
     ),
     new_check_record(
@@ -78,7 +78,7 @@ build_input_issues <- function(assay_matrix, feature_ids, sample_ids, non_numeri
       status = if (length(missing_sample_ids)) "fail" else "pass",
       items = missing_sample_ids,
       detail = if (length(missing_sample_ids)) {
-        "Every sample column must have a non-empty identifier."
+        "Every sample row must have a non-empty identifier."
       } else {
         "All sample identifiers are present."
       }
@@ -90,7 +90,7 @@ build_input_issues <- function(assay_matrix, feature_ids, sample_ids, non_numeri
       status = if (length(missing_feature_ids)) "fail" else "pass",
       items = missing_feature_ids,
       detail = if (length(missing_feature_ids)) {
-        "Every feature row must have a non-empty identifier."
+        "Every feature column must have a non-empty identifier."
       } else {
         "All feature identifiers are present."
       }
@@ -102,7 +102,7 @@ build_input_issues <- function(assay_matrix, feature_ids, sample_ids, non_numeri
       status = if (length(duplicate_sample_ids)) "fail" else "pass",
       items = duplicate_sample_ids,
       detail = if (length(duplicate_sample_ids)) {
-        "Sample identifiers in the matrix header must be unique."
+        "Sample identifiers in the first column must be unique."
       } else {
         "Sample identifiers are unique."
       }
@@ -136,47 +136,50 @@ build_input_issues <- function(assay_matrix, feature_ids, sample_ids, non_numeri
 
 load_omics_matrix <- function(
     matrix_path,
+    sample_id_col = NULL,
     feature_id_col = NULL,
     matrix_sep = "\t") {
   assay_raw <- read_delimited_file(matrix_path, sep = matrix_sep)
 
   if (ncol(assay_raw) < 2) {
     stop(
-      "The assay matrix must contain a feature column and at least one sample column.",
+      "The assay matrix must contain a sample identifier column and at least one feature column.",
       call. = FALSE
     )
   }
 
-  feature_column <- if (is.null(feature_id_col)) names(assay_raw)[1] else feature_id_col
-  if (!(feature_column %in% names(assay_raw))) {
-    stop("Assay matrix is missing the feature identifier column: ", feature_column, call. = FALSE)
+  if (!is.null(feature_id_col)) {
+    warning("feature_id_col is ignored; OmicsQC expects features in columns.", call. = FALSE)
   }
 
-  feature_column_index <- match(feature_column, names(assay_raw))
-  sample_column_indices <- setdiff(seq_along(assay_raw), feature_column_index)
-  if (!length(sample_column_indices)) {
-    stop("No sample columns were found in the assay matrix.", call. = FALSE)
+  sample_column <- if (is.null(sample_id_col)) names(assay_raw)[1] else sample_id_col
+  if (!(sample_column %in% names(assay_raw))) {
+    stop("Assay matrix is missing the sample identifier column: ", sample_column, call. = FALSE)
   }
 
-  sample_columns <- names(assay_raw)[sample_column_indices]
+  sample_column_index <- match(sample_column, names(assay_raw))
+  feature_column_indices <- setdiff(seq_along(assay_raw), sample_column_index)
+  if (!length(feature_column_indices)) {
+    stop("No feature columns were found in the assay matrix.", call. = FALSE)
+  }
 
-  feature_ids <- normalize_ids(assay_raw[[feature_column]])
-  sample_ids <- normalize_ids(sample_columns)
+  sample_ids <- normalize_ids(assay_raw[[sample_column]])
+  feature_ids <- normalize_ids(names(assay_raw)[feature_column_indices])
 
-  assay_values <- assay_raw[sample_column_indices]
-  colnames(assay_values) <- sample_ids
+  assay_values <- assay_raw[feature_column_indices]
+  colnames(assay_values) <- feature_ids
 
   coerced <- coerce_assay_to_numeric(assay_values)
   assay_matrix <- coerced$matrix
-  rownames(assay_matrix) <- feature_ids
-  colnames(assay_matrix) <- sample_ids
+  rownames(assay_matrix) <- sample_ids
+  colnames(assay_matrix) <- feature_ids
 
   structure(
     list(
       assay = assay_matrix,
       feature_ids = feature_ids,
       sample_ids = sample_ids,
-      feature_id_col = feature_column,
+      sample_id_col = sample_column,
       non_numeric_entries = coerced$non_numeric,
       paths = list(
         matrix = normalizePath(matrix_path, winslash = "/", mustWork = TRUE)
@@ -195,7 +198,7 @@ load_omics_matrix <- function(
 load_omics_inputs <- function(
     matrix_path,
     metadata_path = NULL,
-    sample_id_col = "sample_id",
+  sample_id_col = NULL,
     feature_id_col = NULL,
     matrix_sep = "\t",
     metadata_sep = NULL) {
@@ -205,6 +208,7 @@ load_omics_inputs <- function(
 
   load_omics_matrix(
     matrix_path = matrix_path,
+    sample_id_col = sample_id_col,
     feature_id_col = feature_id_col,
     matrix_sep = matrix_sep
   )

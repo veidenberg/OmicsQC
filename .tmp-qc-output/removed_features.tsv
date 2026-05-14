@@ -1,0 +1,3 @@
+feature_id	reasons
+gene_a	missing_fraction>0.200
+gene_e	zero_fraction>0.800

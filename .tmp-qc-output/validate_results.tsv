@@ -1,0 +1,5 @@
+source	rule	expression	passes	fails	n_na	error	warning	status
+/Users/andres/Desktop/Tartu/OmicsQC/tmp/validate/base_rules.yaml	total_signal_positive	total_signal > 0	4	0	0	FALSE	FALSE	pass
+/Users/andres/Desktop/Tartu/OmicsQC/tmp/validate/base_rules.yaml	detected_features_positive	detected_features > 0	4	0	0	FALSE	FALSE	pass
+/Users/andres/Desktop/Tartu/OmicsQC/tmp/validate/base_rules.yaml	missing_fraction_half	missing_fraction - 0.5 <= 1e-08	4	0	0	FALSE	FALSE	pass
+/Users/andres/Desktop/Tartu/OmicsQC/tmp/validate/base_rules.yaml	zero_fraction_cap	zero_fraction - 0.95 <= 1e-08	4	0	0	FALSE	FALSE	pass

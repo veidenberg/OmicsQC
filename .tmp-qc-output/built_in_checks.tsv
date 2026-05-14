@@ -1,0 +1,11 @@
+scope	check	severity	status	item_count	items	detail
+dataset	empty_assay_matrix	error	pass	0		Loaded 6 features across 4 samples.
+matrix	missing_sample_ids	error	pass	0		All sample identifiers are present.
+matrix	missing_feature_ids	error	pass	0		All feature identifiers are present.
+matrix	duplicate_sample_ids	error	pass	0		Sample identifiers are unique.
+matrix	duplicate_feature_ids	warning	pass	0		Feature identifiers are unique.
+matrix	non_numeric_assay_values	warning	pass	0		All assay values are numeric.
+sample	all_zero_samples	warning	pass	0		No all-zero samples were detected.
+sample	all_missing_samples	warning	pass	0		No all-missing samples were detected.
+feature	all_zero_features	warning	fail	1	gene_e	One or more features are zero across all observed samples.
+feature	all_missing_features	warning	pass	0		No all-missing features were detected.

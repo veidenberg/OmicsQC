@@ -1,0 +1,9 @@
+metric	value
+n_features	6
+n_samples	4
+missing_fraction_overall	0.0416666666666667
+zero_fraction_overall	0.347826086956522
+sample_missing_fraction_median	0
+feature_missing_fraction_median	0
+sample_zero_fraction_median	0.333333333333333
+feature_zero_fraction_median	0.291666666666667

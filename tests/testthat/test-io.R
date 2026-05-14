@@ -5,7 +5,7 @@ test_that("load_omics_matrix preserves sample and feature identifiers", {
 
   expect_equal(inputs$sample_ids, c("sample_1", "sample_2", "sample_3", "sample_4"))
   expect_equal(inputs$feature_ids, c("gene_a", "gene_b", "gene_c", "gene_d", "gene_e", "gene_f"))
-  expect_equal(dim(inputs$assay), c(6, 4))
+  expect_equal(dim(inputs$assay), c(4, 6))
 })
 
 test_that("duplicate sample identifiers are surfaced as input issues", {

@@ -8,7 +8,7 @@ specific omics layer. OmicsQC does not perform preprocessing itself.
 
 The current implementation focuses on:
 
-- validating a single tab-separated feature-by-sample matrix
+- validating a single tab-separated sample-by-feature matrix
 - computing dataset-level, sample-level, and feature-level QC summaries
 - applying configurable sample and feature removal filters
 - integrating validate YAML rule files for custom checks
@@ -19,8 +19,8 @@ The current implementation focuses on:
 
 The package expects one required tab-separated assay matrix where:
 
-1. The first row contains sample identifiers.
-2. The first column contains feature identifiers.
+1. The first column contains sample identifiers.
+2. Each remaining column is a feature identifier in the header row.
 3. Every remaining cell contains a numeric measurement or a missing value.
 4. A value of `0` is treated as below detection limit by default.
 

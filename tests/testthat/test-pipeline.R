@@ -18,7 +18,7 @@ test_that("feature linking harmonizes the filtered assay output", {
   )
 
   expect_true(any(result$harmonization$summary$mapping_status == "mapped"))
-  expect_true("GENE:B" %in% rownames(result$filtered$assay))
+  expect_true("GENE:B" %in% colnames(result$filtered$assay))
 })
 
 test_that("write_qc_outputs writes summary artifacts", {

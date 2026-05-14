@@ -1,0 +1,27 @@
+<html><head><meta charset='utf-8'><title>OmicsQC Report</title>
+<style>body{font-family:Helvetica,Arial,sans-serif;margin:24px;}table{border-collapse:collapse;width:100%;margin:12px 0;}th,td{border:1px solid #d7d7d7;padding:6px 8px;text-align:left;}h1,h2{margin-bottom:8px;} .metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;} .metric-card{border:1px solid #d7d7d7;padding:12px;border-radius:8px;background:#fafafa;}</style>
+</head><body>
+<h1>OmicsQC Report</h1>
+<p><strong>Status:</strong> PASS</p>
+<h2>Dataset Summary</h2>
+<div class='metric-grid'>
+<div class='metric-card'><strong>n_features</strong><br/>6</div>
+<div class='metric-card'><strong>n_samples</strong><br/>4</div>
+<div class='metric-card'><strong>missing_fraction_overall</strong><br/>0.04167</div>
+<div class='metric-card'><strong>zero_fraction_overall</strong><br/>0.3478</div>
+<div class='metric-card'><strong>sample_missing_fraction_median</strong><br/>0</div>
+<div class='metric-card'><strong>feature_missing_fraction_median</strong><br/>0</div>
+<div class='metric-card'><strong>sample_zero_fraction_median</strong><br/>0.3333</div>
+<div class='metric-card'><strong>feature_zero_fraction_median</strong><br/>0.2917</div>
+</div>
+<h2>Built-in Checks</h2>
+<table><tr><th>scope</th><th>check</th><th>severity</th><th>status</th><th>item_count</th><th>items</th><th>detail</th></tr><tr><td>dataset</td><td>empty_assay_matrix</td><td>error</td><td>pass</td><td>0</td><td></td><td>Loaded 6 features across 4 samples.</td></tr><tr><td>matrix</td><td>missing_sample_ids</td><td>error</td><td>pass</td><td>0</td><td></td><td>All sample identifiers are present.</td></tr><tr><td>matrix</td><td>missing_feature_ids</td><td>error</td><td>pass</td><td>0</td><td></td><td>All feature identifiers are present.</td></tr><tr><td>matrix</td><td>duplicate_sample_ids</td><td>error</td><td>pass</td><td>0</td><td></td><td>Sample identifiers are unique.</td></tr><tr><td>matrix</td><td>duplicate_feature_ids</td><td>warning</td><td>pass</td><td>0</td><td></td><td>Feature identifiers are unique.</td></tr><tr><td>matrix</td><td>non_numeric_assay_values</td><td>warning</td><td>pass</td><td>0</td><td></td><td>All assay values are numeric.</td></tr><tr><td>sample</td><td>all_zero_samples</td><td>warning</td><td>pass</td><td>0</td><td></td><td>No all-zero samples were detected.</td></tr><tr><td>sample</td><td>all_missing_samples</td><td>warning</td><td>pass</td><td>0</td><td></td><td>No all-missing samples were detected.</td></tr><tr><td>feature</td><td>all_zero_features</td><td>warning</td><td>fail</td><td>1</td><td>gene_e</td><td>One or more features are zero across all observed samples.</td></tr><tr><td>feature</td><td>all_missing_features</td><td>warning</td><td>pass</td><td>0</td><td></td><td>No all-missing features were detected.</td></tr></table>
+<h2>Removed Samples</h2>
+<p>None</p>
+<h2>Removed Features</h2>
+<table><tr><th>feature_id</th><th>reasons</th></tr><tr><td>gene_a</td><td>missing_fraction&gt;0.200</td></tr><tr><td>gene_e</td><td>zero_fraction&gt;0.800</td></tr></table>
+<h2>Harmonization</h2>
+<table><tr><th>original_feature_id</th><th>harmonized_feature_id</th><th>mapping_status</th></tr><tr><td>gene_b</td><td>gene_b</td><td>unmapped</td></tr><tr><td>gene_c</td><td>gene_c</td><td>unmapped</td></tr><tr><td>gene_d</td><td>gene_d</td><td>unmapped</td></tr><tr><td>gene_f</td><td>gene_f</td><td>unmapped</td></tr></table>
+<h2>Validate Results</h2>
+<table><tr><th>source</th><th>rule</th><th>expression</th><th>passes</th><th>fails</th><th>n_na</th><th>error</th><th>warning</th><th>status</th></tr><tr><td>/Users/andres/Desktop/Tartu/OmicsQC/tmp/validate/base_rules.yaml</td><td>total_signal_positive</td><td>total_signal &gt; 0</td><td>4</td><td>0</td><td>0</td><td>FALSE</td><td>FALSE</td><td>pass</td></tr><tr><td>/Users/andres/Desktop/Tartu/OmicsQC/tmp/validate/base_rules.yaml</td><td>detected_features_positive</td><td>detected_features &gt; 0</td><td>4</td><td>0</td><td>0</td><td>FALSE</td><td>FALSE</td><td>pass</td></tr><tr><td>/Users/andres/Desktop/Tartu/OmicsQC/tmp/validate/base_rules.yaml</td><td>missing_fraction_half</td><td>missing_fraction - 0.5 &lt;= 1e-08</td><td>4</td><td>0</td><td>0</td><td>FALSE</td><td>FALSE</td><td>pass</td></tr><tr><td>/Users/andres/Desktop/Tartu/OmicsQC/tmp/validate/base_rules.yaml</td><td>zero_fraction_cap</td><td>zero_fraction - 0.95 &lt;= 1e-08</td><td>4</td><td>0</td><td>0</td><td>FALSE</td><td>FALSE</td><td>pass</td></tr></table>
+</body></html>
