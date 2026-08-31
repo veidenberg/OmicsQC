@@ -42,6 +42,9 @@ test_that("write_qc_outputs writes summary artifacts", {
   report_html <- paste(readLines(outputs$html_report, warn = FALSE), collapse = "\n")
   expect_match(report_html, "PCA Outlier Analysis", fixed = TRUE)
   expect_match(report_html, "PCA Sample Diagnostics", fixed = TRUE)
+  expect_match(report_html, "class='table-scroll'", fixed = TRUE)
+  expect_match(report_html, "max-height:28rem", fixed = TRUE)
+  expect_match(report_html, "position:sticky", fixed = TRUE)
 })
 
 test_that("PCA diagnostics and outputs reflect filtered assay membership", {

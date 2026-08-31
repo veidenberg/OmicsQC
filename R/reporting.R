@@ -23,7 +23,11 @@ render_html_table <- function(data) {
     )
   }, character(1))
 
-  paste0("<table>", header, paste(rows, collapse = ""), "</table>")
+  paste0(
+    "<div class='table-scroll' role='region' aria-label='Scrollable data table' tabindex='0'>",
+    "<table>", header, paste(rows, collapse = ""), "</table>",
+    "</div>"
+  )
 }
 
 print.OmicsQCResult <- function(x, ...) {
@@ -178,7 +182,7 @@ write_qc_outputs <- function(result, output_dir) {
 
   html_lines <- c(
     "<html><head><meta charset='utf-8'><title>OmicsQC Report</title>",
-    "<style>body{font-family:Helvetica,Arial,sans-serif;margin:24px;}table{border-collapse:collapse;width:100%;margin:12px 0;}th,td{border:1px solid #d7d7d7;padding:6px 8px;text-align:left;}h1,h2{margin-bottom:8px;} .metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;} .metric-card{border:1px solid #d7d7d7;padding:12px;border-radius:8px;background:#fafafa;}</style>",
+    "<style>body{font-family:Helvetica,Arial,sans-serif;margin:24px;}table{border-collapse:collapse;width:100%;}th,td{border:1px solid #d7d7d7;padding:6px 8px;text-align:left;white-space:nowrap;}th{position:sticky;top:0;z-index:1;background:#f2f2f2;}h1,h2{margin-bottom:8px;}.table-scroll{max-height:28rem;max-width:100%;margin:12px 0;overflow:auto;border:1px solid #d7d7d7;}.table-scroll table{margin:0;}.table-scroll:focus{outline:2px solid #2468a2;outline-offset:2px;}.metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;}.metric-card{border:1px solid #d7d7d7;padding:12px;border-radius:8px;background:#fafafa;}</style>",
     "</head><body>",
     "<h1>OmicsQC Report</h1>",
     sprintf("<p><strong>Status:</strong> %s</p>", html_escape(toupper(result$status))),
