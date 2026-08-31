@@ -7,9 +7,9 @@ Maintainer: Andres Veidenberg <andres.veidenberg@gmail.com>
 Description: Provides a lightweight quality control workflow for generic omics
     assay matrices. The package validates matrix format, calculates dataset,
     sample, and feature QC summaries, applies configurable sample and feature
-    filters, supports feature ID harmonization through linking files, and
-    integrates validate rule files so project-specific checks can be added
-    without changing code.
+    filters, supports optional PCA-based sample outlier removal and feature ID
+    harmonization through linking files, and integrates validate rule files so
+    project-specific checks can be added without changing code.
 License: GPL-3
 Encoding: UTF-8
 LazyData: true

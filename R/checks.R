@@ -226,6 +226,152 @@ has_fatal_builtin_failures <- function(checks) {
   any(checks$severity == "error" & checks$status == "fail")
 }
 
+empty_pca_result <- function(sample_ids, status, reason = "") {
+  list(
+    status = status,
+    reason = reason,
+    n_complete_samples = 0L,
+    n_variable_features = 0L,
+    n_retained_pcs = 0L,
+    cutoff = NA_real_,
+    variance = data.frame(
+      component = character(),
+      explained_variance = numeric(),
+      cumulative_variance = numeric(),
+      retained = logical(),
+      used_for_distance = logical(),
+      stringsAsFactors = FALSE
+    ),
+    scores = data.frame(
+      sample_id = sample_ids,
+      analysis_status = rep(if (identical(status, "disabled")) "disabled" else "not_analyzed", length(sample_ids)),
+      robust_distance_squared = rep(NA_real_, length(sample_ids)),
+      cutoff = rep(NA_real_, length(sample_ids)),
+      outlier = rep(FALSE, length(sample_ids)),
+      stringsAsFactors = FALSE
+    ),
+    keep_mask = rep(TRUE, length(sample_ids)),
+    removed = data.frame(sample_id = character(), reasons = character(), stringsAsFactors = FALSE)
+  )
+}
+
+evaluate_pca_outliers <- function(
+    assay_matrix,
+    enabled = FALSE,
+    variance_target = 0.8,
+    cutoff_probability = 0.99,
+    candidate_mask = rep(TRUE, nrow(assay_matrix))) {
+  sample_ids <- rownames(assay_matrix)
+  if (!isTRUE(enabled)) {
+    result <- empty_pca_result(sample_ids, status = "disabled")
+    result$scores$analysis_status[!candidate_mask] <- "scalar_filtered"
+    return(result)
+  }
+
+  result <- empty_pca_result(sample_ids, status = "skipped")
+  complete_case_mask <- if (ncol(assay_matrix)) {
+    stats::complete.cases(assay_matrix)
+  } else {
+    rep(TRUE, nrow(assay_matrix))
+  }
+  complete_mask <- candidate_mask & complete_case_mask
+  result$n_complete_samples <- sum(complete_mask)
+  result$scores$analysis_status[!candidate_mask] <- "scalar_filtered"
+  result$scores$analysis_status[candidate_mask & !complete_mask] <- "incomplete"
+  result$scores$analysis_status[complete_mask] <- "eligible"
+
+  if (result$n_complete_samples < 3) {
+    result$reason <- "PCA requires at least three complete samples."
+    return(result)
+  }
+
+  complete_assay <- assay_matrix[complete_mask, , drop = FALSE]
+  feature_sd <- apply(complete_assay, 2, stats::sd)
+  variable_feature_mask <- is.finite(feature_sd) & feature_sd > 0
+  result$n_variable_features <- sum(variable_feature_mask)
+  if (result$n_variable_features < 2) {
+    result$reason <- "PCA requires at least two variable features."
+    return(result)
+  }
+
+  pca <- stats::prcomp(
+    complete_assay[, variable_feature_mask, drop = FALSE],
+    center = TRUE,
+    scale. = TRUE
+  )
+  component_variance <- pca$sdev^2
+  positive_component_mask <- is.finite(component_variance) & component_variance > 0
+  if (!any(positive_component_mask)) {
+    result$reason <- "PCA produced no components with positive variance."
+    return(result)
+  }
+
+  component_variance <- component_variance[positive_component_mask]
+  component_scores <- pca$x[, positive_component_mask, drop = FALSE]
+  explained_variance <- component_variance / sum(component_variance)
+  cumulative_variance <- cumsum(explained_variance)
+  retained_count <- which(cumulative_variance >= variance_target)[1]
+  retained_mask <- seq_along(component_variance) <= retained_count
+  retained_scores <- component_scores[, retained_mask, drop = FALSE]
+
+  score_centers <- apply(retained_scores, 2, stats::median)
+  score_scales <- apply(retained_scores, 2, stats::mad)
+  usable_component_mask <- is.finite(score_scales) & score_scales > 0
+
+  result$variance <- data.frame(
+    component = colnames(component_scores),
+    explained_variance = explained_variance,
+    cumulative_variance = cumulative_variance,
+    retained = retained_mask,
+    used_for_distance = retained_mask & c(usable_component_mask, rep(FALSE, sum(!retained_mask))),
+    stringsAsFactors = FALSE
+  )
+  result$n_retained_pcs <- retained_count
+
+  score_frame <- as.data.frame(retained_scores, stringsAsFactors = FALSE)
+  score_rows <- match(sample_ids[complete_mask], result$scores$sample_id)
+  for (component in names(score_frame)) {
+    result$scores[[component]] <- NA_real_
+    result$scores[[component]][score_rows] <- score_frame[[component]]
+  }
+
+  if (!any(usable_component_mask)) {
+    result$reason <- "Retained PCA components have no usable robust scale."
+    return(result)
+  }
+
+  standardized_scores <- sweep(
+    retained_scores[, usable_component_mask, drop = FALSE],
+    2,
+    score_centers[usable_component_mask],
+    "-"
+  )
+  standardized_scores <- sweep(
+    standardized_scores,
+    2,
+    score_scales[usable_component_mask],
+    "/"
+  )
+  robust_distance_squared <- rowSums(standardized_scores^2)
+  cutoff <- stats::qchisq(cutoff_probability, df = sum(usable_component_mask))
+  outlier <- robust_distance_squared > cutoff
+
+  result$status <- "completed"
+  result$reason <- ""
+  result$cutoff <- cutoff
+  result$scores$analysis_status[score_rows] <- "analyzed"
+  result$scores$robust_distance_squared[score_rows] <- robust_distance_squared
+  result$scores$cutoff[score_rows] <- cutoff
+  result$scores$outlier[score_rows] <- outlier
+  result$keep_mask <- !result$scores$outlier
+  result$removed <- data.frame(
+    sample_id = result$scores$sample_id[result$scores$outlier],
+    reasons = rep("pca_robust_distance>cutoff", sum(result$scores$outlier)),
+    stringsAsFactors = FALSE
+  )
+  result
+}
+
 evaluate_sample_filters <- function(
     sample_qc,
     max_missing_fraction = 0.2,

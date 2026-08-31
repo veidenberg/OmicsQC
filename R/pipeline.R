@@ -91,10 +91,27 @@ harmonize_feature_ids <- function(filtered_assay, feature_links) {
   )
 }
 
+validate_pca_settings <- function(remove_pca_outliers, variance_target, cutoff_probability) {
+  if (!is.logical(remove_pca_outliers) || length(remove_pca_outliers) != 1 || is.na(remove_pca_outliers)) {
+    stop("remove_pca_outliers must be TRUE or FALSE.", call. = FALSE)
+  }
+
+  probability_settings <- list(
+    pca_variance_target = variance_target,
+    pca_cutoff_probability = cutoff_probability
+  )
+  for (setting_name in names(probability_settings)) {
+    value <- probability_settings[[setting_name]]
+    if (!is.numeric(value) || length(value) != 1 || !is.finite(value) || value <= 0 || value >= 1) {
+      stop(setting_name, " must be a finite number strictly between 0 and 1.", call. = FALSE)
+    }
+  }
+}
+
 run_qc_pipeline <- function(
     matrix_path,
     metadata_path = NULL,
-  sample_id_col = NULL,
+    sample_id_col = NULL,
     feature_id_col = NULL,
     matrix_sep = "\t",
     rule_files = NULL,
@@ -108,7 +125,16 @@ run_qc_pipeline <- function(
     feature_max_zero_fraction = 0.8,
     feature_max_outlier_fraction = 0.2,
     enforce_normal_distribution = FALSE,
-    normality_alpha = 0.05) {
+    normality_alpha = 0.05,
+    remove_pca_outliers = FALSE,
+    pca_variance_target = 0.8,
+    pca_cutoff_probability = 0.99) {
+  validate_pca_settings(
+    remove_pca_outliers = remove_pca_outliers,
+    variance_target = pca_variance_target,
+    cutoff_probability = pca_cutoff_probability
+  )
+
   inputs <- load_omics_matrix(
     matrix_path = matrix_path,
     sample_id_col = sample_id_col,
@@ -140,6 +166,11 @@ run_qc_pipeline <- function(
       stringsAsFactors = FALSE
     )
   )
+  pca <- empty_pca_result(
+    inputs$sample_ids,
+    status = if (remove_pca_outliers) "skipped" else "disabled",
+    reason = if (remove_pca_outliers) "PCA was not run because built-in input checks failed." else ""
+  )
 
   if (!has_fatal_builtin_failures(built_in_checks)) {
     sample_filters <- evaluate_sample_filters(
@@ -158,7 +189,17 @@ run_qc_pipeline <- function(
       normality_alpha = normality_alpha
     )
 
-    removed <- list(samples = sample_filters$removed, features = feature_filters$removed)
+    pca <- evaluate_pca_outliers(
+      assay_matrix = inputs$assay[, feature_filters$keep_mask, drop = FALSE],
+      enabled = remove_pca_outliers,
+      variance_target = pca_variance_target,
+      cutoff_probability = pca_cutoff_probability,
+      candidate_mask = sample_filters$keep_mask
+    )
+    sample_filters$keep_mask <- sample_filters$keep_mask & pca$keep_mask
+    removed_samples <- rbind(sample_filters$removed, pca$removed)
+    rownames(removed_samples) <- NULL
+    removed <- list(samples = removed_samples, features = feature_filters$removed)
     filtered <- filter_assay_matrix(inputs, sample_filters = sample_filters, feature_filters = feature_filters)
     filtered$sample_qc <- sample_qc[sample_filters$keep_mask, , drop = FALSE]
     filtered$feature_qc <- feature_qc[feature_filters$keep_mask, , drop = FALSE]
@@ -195,6 +236,9 @@ run_qc_pipeline <- function(
         feature_max_outlier_fraction = feature_max_outlier_fraction,
         enforce_normal_distribution = enforce_normal_distribution,
         normality_alpha = normality_alpha,
+        remove_pca_outliers = remove_pca_outliers,
+        pca_variance_target = pca_variance_target,
+        pca_cutoff_probability = pca_cutoff_probability,
         preprocessing_assumption = "Input matrix is assumed to be already normalized, transformed, and corrected."
       ),
       built_in_checks = built_in_checks,
@@ -203,6 +247,7 @@ run_qc_pipeline <- function(
       feature_qc = feature_qc,
       filtered = filtered,
       removed = removed,
+      pca = pca,
       harmonization = harmonization,
       validate = validate_result
     ),

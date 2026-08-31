@@ -11,6 +11,7 @@ The current implementation focuses on:
 - validating a single tab-separated sample-by-feature matrix
 - computing dataset-level, sample-level, and feature-level QC summaries
 - applying configurable sample and feature removal filters
+- optionally removing multivariate sample outliers with PCA
 - integrating validate YAML rule files for custom checks
 - harmonizing feature IDs with optional linking files
 - writing a QCed harmonized dataset and a compact HTML QC report
@@ -58,12 +59,43 @@ including:
 
 - samples with many missing values
 - samples with many values below detection limit
+- samples with extreme robust PCA score distances
 - features with many missing values
 - features with many values below detection limit
 - features that fail optional normality enforcement
 
 The exported QCed dataset contains only retained samples and retained features.
 Audit tables record which samples and features were removed and why.
+
+### PCA sample outliers
+
+PCA-based sample removal is opt-in and runs after the scalar sample and feature
+filters. PCA is fitted once using centered and scaled retained features. Only
+candidate samples with complete measurements across those features participate;
+incomplete samples are recorded as ineligible for PCA and are not removed by
+this stage.
+
+The pipeline retains the fewest principal components that explain at least 80%
+of variance by default. Scores on retained components are standardized using
+their median and median absolute deviation. A sample is removed when its
+squared robust score distance exceeds the 99th percentile of a chi-square
+distribution with degrees of freedom equal to the usable component count.
+
+```r
+result <- run_qc_pipeline(
+  matrix_path = "assay.tsv",
+  remove_pca_outliers = TRUE,
+  pca_variance_target = 0.80,
+  pca_cutoff_probability = 0.99
+)
+```
+
+If fewer than three complete candidate samples, fewer than two variable
+features, or no retained component with a usable robust scale remains, PCA is
+skipped without failing the pipeline. The reason is available in
+`result$pca$reason`. Per-sample eligibility, component scores, robust distances,
+cutoffs, and flags are stored in `result$pca$scores`; explained variance is in
+`result$pca$variance`.
 
 ## Custom checks with validate
 
@@ -112,6 +144,7 @@ available and records mapped, unmapped, and ambiguous features in audit outputs.
 - the QCed harmonized assay matrix
 - dataset, sample, and feature QC tables
 - removed sample and feature audit tables
+- PCA score and explained-variance diagnostics
 - harmonization summary tables
 - validate results
 - a compact standardized HTML report suitable for cross-dataset comparison

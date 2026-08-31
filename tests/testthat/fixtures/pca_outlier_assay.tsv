@@ -1,0 +1,11 @@
+sample_id	feature_1	feature_2	feature_3	feature_4	feature_5	feature_6	feature_7	feature_8
+sample_1	10	11	9	10	12	8	11	9
+sample_2	11	10	10	9	11	9	10	10
+sample_3	9	12	8	11	10	10	12	8
+sample_4	10.5	9.5	11	10	9	11	9.5	10.5
+sample_5	8.5	10.5	9.5	12	10.5	9	11.5	9.5
+sample_6	12	11	10.5	8.5	11	10	9	11
+sample_7	9.5	8.5	12	10.5	8.5	12	10.5	10
+sample_8	11.5	10	9	11.5	12	8.5	10	9
+outlier_sample	50	-25	45	-30	60	-20	55	-35
+incomplete_sample	NA	10.5	10	9.5	10.5	9.5	10	10.5

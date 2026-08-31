@@ -53,6 +53,16 @@ print.OmicsQCResult <- function(x, ...) {
     cat("Filtered assay dimensions:", nrow(x$filtered$assay), "samples x", ncol(x$filtered$assay), "features\n")
   }
 
+  cat("PCA outlier analysis:", x$pca$status)
+  if (nzchar(x$pca$reason)) {
+    cat("-", x$pca$reason)
+  }
+  cat("\n")
+
+  if (identical(x$pca$status, "completed")) {
+    cat("PCA outliers:", sum(x$pca$scores$outlier), "\n")
+  }
+
   if (nrow(x$removed$samples)) {
     cat("Removed samples:", nrow(x$removed$samples), "\n")
   }
@@ -108,6 +118,8 @@ write_qc_outputs <- function(result, output_dir) {
   removed_features_path <- file.path(output_dir, "removed_features.tsv")
   harmonization_path <- file.path(output_dir, "harmonization.tsv")
   filtered_assay_path <- file.path(output_dir, "assay_qc_harmonized.tsv")
+  pca_scores_path <- file.path(output_dir, "pca_scores.tsv")
+  pca_variance_path <- file.path(output_dir, "pca_variance.tsv")
   html_report_path <- file.path(output_dir, "qc_report.html")
 
   write_tsv(result$built_in_checks, built_in_checks_path)
@@ -125,6 +137,8 @@ write_qc_outputs <- function(result, output_dir) {
 
   write_tsv(result$removed$samples, removed_samples_path)
   write_tsv(result$removed$features, removed_features_path)
+  write_tsv(result$pca$scores, pca_scores_path)
+  write_tsv(result$pca$variance, pca_variance_path)
 
   if (!is.null(result$harmonization$summary)) {
     write_tsv(result$harmonization$summary, harmonization_path)
@@ -141,6 +155,26 @@ write_qc_outputs <- function(result, output_dir) {
   }
 
   writeLines(capture.output(print(result)), con = summary_path)
+
+  pca_summary <- data.frame(
+    metric = c(
+      "status",
+      "reason",
+      "complete_samples",
+      "variable_features",
+      "retained_components",
+      "distance_cutoff"
+    ),
+    value = c(
+      result$pca$status,
+      result$pca$reason,
+      result$pca$n_complete_samples,
+      result$pca$n_variable_features,
+      result$pca$n_retained_pcs,
+      result$pca$cutoff
+    ),
+    stringsAsFactors = FALSE
+  )
 
   html_lines <- c(
     "<html><head><meta charset='utf-8'><title>OmicsQC Report</title>",
@@ -162,6 +196,12 @@ write_qc_outputs <- function(result, output_dir) {
     render_html_table(result$built_in_checks),
     "<h2>Removed Samples</h2>",
     render_html_table(result$removed$samples),
+    "<h2>PCA Outlier Analysis</h2>",
+    render_html_table(pca_summary),
+    "<h3>PCA Explained Variance</h3>",
+    render_html_table(result$pca$variance),
+    "<h3>PCA Sample Diagnostics</h3>",
+    render_html_table(result$pca$scores),
     "<h2>Removed Features</h2>",
     render_html_table(result$removed$features),
     "<h2>Harmonization</h2>",
@@ -180,6 +220,8 @@ write_qc_outputs <- function(result, output_dir) {
     built_in_checks = normalizePath(built_in_checks_path, winslash = "/", mustWork = TRUE),
     removed_samples = normalizePath(removed_samples_path, winslash = "/", mustWork = TRUE),
     removed_features = normalizePath(removed_features_path, winslash = "/", mustWork = TRUE),
+    pca_scores = normalizePath(pca_scores_path, winslash = "/", mustWork = TRUE),
+    pca_variance = normalizePath(pca_variance_path, winslash = "/", mustWork = TRUE),
     harmonization = if (file.exists(harmonization_path)) normalizePath(harmonization_path, winslash = "/", mustWork = TRUE) else NA_character_,
     filtered_assay = if (file.exists(filtered_assay_path)) normalizePath(filtered_assay_path, winslash = "/", mustWork = TRUE) else NA_character_,
     validate_results = normalizePath(validate_results_path, winslash = "/", mustWork = TRUE),
