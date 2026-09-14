@@ -91,7 +91,7 @@ harmonize_feature_ids <- function(filtered_assay, feature_links) {
   )
 }
 
-validate_pca_settings <- function(remove_pca_outliers, variance_target, cutoff_probability) {
+validate_pca_settings <- function(remove_pca_outliers, variance_target, cutoff_probability, cutoff_method, cutoff_sd) {
   if (!is.logical(remove_pca_outliers) || length(remove_pca_outliers) != 1 || is.na(remove_pca_outliers)) {
     stop("remove_pca_outliers must be TRUE or FALSE.", call. = FALSE)
   }
@@ -105,6 +105,14 @@ validate_pca_settings <- function(remove_pca_outliers, variance_target, cutoff_p
     if (!is.numeric(value) || length(value) != 1 || !is.finite(value) || value <= 0 || value >= 1) {
       stop(setting_name, " must be a finite number strictly between 0 and 1.", call. = FALSE)
     }
+  }
+
+  if (!is.character(cutoff_method) || length(cutoff_method) != 1 || is.na(cutoff_method) ||
+      !(cutoff_method %in% c("percentile", "sd"))) {
+    stop("pca_cutoff_method must be either 'percentile' or 'sd'.", call. = FALSE)
+  }
+  if (!is.numeric(cutoff_sd) || length(cutoff_sd) != 1 || !is.finite(cutoff_sd) || cutoff_sd <= 0) {
+    stop("pca_cutoff_sd must be a finite number greater than 0.", call. = FALSE)
   }
 }
 
@@ -128,11 +136,15 @@ run_qc_pipeline <- function(
     normality_alpha = 0.05,
     remove_pca_outliers = FALSE,
     pca_variance_target = 0.8,
-    pca_cutoff_probability = 0.99) {
+    pca_cutoff_probability = 0.99,
+    pca_cutoff_method = "sd",
+    pca_cutoff_sd = 2) {
   validate_pca_settings(
     remove_pca_outliers = remove_pca_outliers,
     variance_target = pca_variance_target,
-    cutoff_probability = pca_cutoff_probability
+    cutoff_probability = pca_cutoff_probability,
+    cutoff_method = pca_cutoff_method,
+    cutoff_sd = pca_cutoff_sd
   )
 
   inputs <- load_omics_matrix(
@@ -194,6 +206,8 @@ run_qc_pipeline <- function(
       enabled = remove_pca_outliers,
       variance_target = pca_variance_target,
       cutoff_probability = pca_cutoff_probability,
+      cutoff_method = pca_cutoff_method,
+      cutoff_sd = pca_cutoff_sd,
       candidate_mask = sample_filters$keep_mask
     )
     sample_filters$keep_mask <- sample_filters$keep_mask & pca$keep_mask
@@ -239,6 +253,8 @@ run_qc_pipeline <- function(
         remove_pca_outliers = remove_pca_outliers,
         pca_variance_target = pca_variance_target,
         pca_cutoff_probability = pca_cutoff_probability,
+        pca_cutoff_method = pca_cutoff_method,
+        pca_cutoff_sd = pca_cutoff_sd,
         preprocessing_assumption = "Input matrix is assumed to be already normalized, transformed, and corrected."
       ),
       built_in_checks = built_in_checks,

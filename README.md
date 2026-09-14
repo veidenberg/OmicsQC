@@ -77,15 +77,29 @@ this stage.
 
 The pipeline retains the fewest principal components that explain at least 80%
 of variance by default. Scores on retained components are standardized using
-their median and median absolute deviation. A sample is removed when its
-squared robust score distance exceeds the 99th percentile of a chi-square
-distribution with degrees of freedom equal to the usable component count.
+their median and median absolute deviation. By default, a sample is removed
+when its squared robust score distance exceeds the mean squared robust score
+distance plus two standard deviations. Set `pca_cutoff_method = "percentile"`
+to use a chi-square percentile instead.
+
+For a one-PC analysis, a two-sided $k$ SD score cutoff corresponds to the
+chi-square percentile `pchisq(k^2, df = 1)`: 2 SD is about 95.45%, 2.58 SD is
+about 99%, and 3 SD is about 99.73%. With multiple PCs, the percentile cutoff
+uses the usable component count as the chi-square degrees of freedom, so there
+is no single SD equivalent.
 
 ```r
 result <- run_qc_pipeline(
   matrix_path = "assay.tsv",
   remove_pca_outliers = TRUE,
   pca_variance_target = 0.80,
+  pca_cutoff_sd = 2
+)
+
+percentile_result <- run_qc_pipeline(
+  matrix_path = "assay.tsv",
+  remove_pca_outliers = TRUE,
+  pca_cutoff_method = "percentile",
   pca_cutoff_probability = 0.99
 )
 ```

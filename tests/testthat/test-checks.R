@@ -25,7 +25,8 @@ test_that("PCA filtering removes a robust score outlier and retains incomplete s
   result <- run_qc_pipeline(
     matrix_path = test_path("fixtures", "pca_outlier_assay.tsv"),
     include_default_rules = FALSE,
-    remove_pca_outliers = TRUE
+    remove_pca_outliers = TRUE,
+    pca_cutoff_method = "percentile"
   )
 
   expect_identical(result$pca$status, "completed")
@@ -40,6 +41,23 @@ test_that("PCA filtering removes a robust score outlier and retains incomplete s
   incomplete_diagnostic <- result$pca$scores[result$pca$scores$sample_id == "incomplete_sample", ]
   expect_identical(incomplete_diagnostic$analysis_status, "incomplete")
   expect_false(incomplete_diagnostic$outlier)
+})
+
+test_that("PCA filtering supports an SD-based robust distance cutoff", {
+  result <- run_qc_pipeline(
+    matrix_path = test_path("fixtures", "pca_outlier_assay.tsv"),
+    include_default_rules = FALSE,
+    remove_pca_outliers = TRUE,
+    pca_cutoff_method = "sd",
+    pca_cutoff_sd = 1
+  )
+
+  analyzed_distances <- result$pca$scores$robust_distance_squared[
+    result$pca$scores$analysis_status == "analyzed"
+  ]
+  expect_identical(result$pca$cutoff_method, "sd")
+  expect_equal(result$pca$cutoff, mean(analyzed_distances) + stats::sd(analyzed_distances))
+  expect_true("outlier_sample" %in% result$removed$samples$sample_id)
 })
 
 test_that("PCA removals compose with scalar sample filters", {

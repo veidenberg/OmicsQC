@@ -61,4 +61,6 @@ test_that("PCA diagnostics and outputs reflect filtered assay membership", {
   expect_false("outlier_sample" %in% rownames(result$filtered$assay))
   expect_identical(result$settings$pca_variance_target, 0.8)
   expect_identical(result$settings$pca_cutoff_probability, 0.99)
+  expect_identical(result$settings$pca_cutoff_method, "sd")
+  expect_identical(result$settings$pca_cutoff_sd, 2)
 })

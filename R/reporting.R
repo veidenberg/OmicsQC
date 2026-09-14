@@ -164,6 +164,7 @@ write_qc_outputs <- function(result, output_dir) {
     metric = c(
       "status",
       "reason",
+      "cutoff_method",
       "complete_samples",
       "variable_features",
       "retained_components",
@@ -172,6 +173,7 @@ write_qc_outputs <- function(result, output_dir) {
     value = c(
       result$pca$status,
       result$pca$reason,
+      result$pca$cutoff_method,
       result$pca$n_complete_samples,
       result$pca$n_variable_features,
       result$pca$n_retained_pcs,

@@ -230,6 +230,7 @@ empty_pca_result <- function(sample_ids, status, reason = "") {
   list(
     status = status,
     reason = reason,
+    cutoff_method = NA_character_,
     n_complete_samples = 0L,
     n_variable_features = 0L,
     n_retained_pcs = 0L,
@@ -260,15 +261,20 @@ evaluate_pca_outliers <- function(
     enabled = FALSE,
     variance_target = 0.8,
     cutoff_probability = 0.99,
+    cutoff_method = c("sd", "percentile"),
+    cutoff_sd = 2,
     candidate_mask = rep(TRUE, nrow(assay_matrix))) {
+  cutoff_method <- match.arg(cutoff_method)
   sample_ids <- rownames(assay_matrix)
   if (!isTRUE(enabled)) {
     result <- empty_pca_result(sample_ids, status = "disabled")
+    result$cutoff_method <- cutoff_method
     result$scores$analysis_status[!candidate_mask] <- "scalar_filtered"
     return(result)
   }
 
   result <- empty_pca_result(sample_ids, status = "skipped")
+  result$cutoff_method <- cutoff_method
   complete_case_mask <- if (ncol(assay_matrix)) {
     stats::complete.cases(assay_matrix)
   } else {
@@ -353,7 +359,11 @@ evaluate_pca_outliers <- function(
     "/"
   )
   robust_distance_squared <- rowSums(standardized_scores^2)
-  cutoff <- stats::qchisq(cutoff_probability, df = sum(usable_component_mask))
+  cutoff <- if (identical(cutoff_method, "percentile")) {
+    stats::qchisq(cutoff_probability, df = sum(usable_component_mask))
+  } else {
+    mean(robust_distance_squared) + cutoff_sd * stats::sd(robust_distance_squared)
+  }
   outlier <- robust_distance_squared > cutoff
 
   result$status <- "completed"
