@@ -176,26 +176,48 @@ make_omicsqc_server <- function(
     output$result_ui <- shiny::renderUI({
       result <- state$result
       shiny::req(result)
-      shiny::tagList(
-        shiny::h3("Dataset summary"),
-        shiny::tableOutput("dataset_qc"),
-        shiny::h3("Built-in checks and warnings"),
-        shiny::tableOutput("built_in_checks"),
-        shiny::h3("Validation results"),
-        shiny::tableOutput("validate_results"),
-        if (nrow(result$validate_errors)) {
-          shiny::tagList(shiny::h3("Validation configuration errors"), shiny::tableOutput("validate_errors"))
-        },
-        shiny::h3(paste("Removed samples:", nrow(result$removed_samples))),
-        shiny::tableOutput("removed_samples"),
-        shiny::h3(paste("Removed features:", nrow(result$removed_features))),
-        shiny::tableOutput("removed_features"),
-        shiny::p("Tables show up to 100 rows; complete diagnostics are in the output archive."),
-        download_link(report_url, "Download HTML report", "qc_report.html"),
-        if ("assay_qc_harmonized.tsv" %in% result$files) {
-          download_link(assay_url, "Download QCed assay", "assay_qc_harmonized.tsv")
-        },
-        download_link(archive_url, "Download all available outputs", "omicsqc_outputs.zip")
+      result_section <- function(title, output_id) {
+        shiny::tags$section(
+          class = "omics-card omics-result-card",
+          shiny::tags$h3(title),
+          shiny::tags$div(
+            class = "omics-table-scroll", role = "region", tabindex = "0",
+            `aria-label` = title, shiny::tableOutput(output_id)
+          )
+        )
+      }
+      shiny::tags$section(
+        class = "omics-results", `aria-labelledby` = "results-heading",
+        shiny::tags$div(
+          class = "omics-results-header",
+          shiny::tags$div(
+            shiny::tags$p(class = "omics-eyebrow", "QUALITY CONTROL"),
+            shiny::tags$h2(id = "results-heading", "QC results"),
+            shiny::tags$p(paste(
+              "Tables show up to 100 rows; complete diagnostics are in the output archive.",
+              "Scroll within tables to see all rows and columns."
+            ))
+          ),
+          shiny::tags$div(
+            class = "omics-downloads",
+            download_link(report_url, "Download HTML report", "qc_report.html"),
+            if ("assay_qc_harmonized.tsv" %in% result$files) {
+              download_link(assay_url, "Download QCed assay", "assay_qc_harmonized.tsv")
+            },
+            download_link(archive_url, "Download all available outputs", "omicsqc_outputs.zip")
+          )
+        ),
+        shiny::tags$div(
+          class = "omics-results-grid",
+          result_section("Dataset summary", "dataset_qc"),
+          result_section("Built-in checks and warnings", "built_in_checks"),
+          result_section("Validation results", "validate_results"),
+          if (nrow(result$validate_errors)) {
+            result_section("Validation configuration errors", "validate_errors")
+          },
+          result_section(paste("Removed samples:", nrow(result$removed_samples)), "removed_samples"),
+          result_section(paste("Removed features:", nrow(result$removed_features)), "removed_features")
+        )
       )
     })
     output$dataset_qc <- shiny::renderTable(utils::head(state$result$dataset_qc, 100))

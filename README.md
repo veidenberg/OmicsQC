@@ -202,11 +202,11 @@ docker compose -f compose.cvdlink.yaml up --build -d
 docker exec certh-cvdlink-rproxy-integration-test sh -c 'nginx -t && nginx -s reload'
 ```
 
-Create a test account and log in at `http://localhost`, then open
-`http://localhost/omicsqc/` manually. Tool cards are not implemented in the
-test frontend. `http://localhost/api/v1/external-tools/all` should list
-`omicsqc` in its `data` array. The app provides a small synthetic example for
-testing.
+Create a test account and log in at `http://localhost`, then select **Data QC**
+and open **OmicsQC**. The app appears inside the dashboard with its shared
+navigation. It remains directly accessible at `http://localhost/omicsqc/`.
+`http://localhost/api/v1/external-tools/all` should list `omicsqc` in its
+`data` array. The app provides a small synthetic example for testing.
 
 The app's internal authentication endpoint is configured by `OMICSQC_AUTH_URL`
 in `compose.cvdlink.yaml`; its default targets the CERTH test backend. The app

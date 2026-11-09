@@ -56,3 +56,26 @@ test("the Run button follows the current upload and exact size limit", () => {
   assert.equal(inputs.at(-1).name, "assay");
   assert.equal(inputs.at(-1).value, null);
 });
+
+test("authentication redirects leave the dashboard frame when embedded", () => {
+  const handlers = {};
+  const redirects = [];
+  let embedded = false;
+  const context = {
+    document: {
+      documentElement: { classList: { contains: () => embedded } },
+      addEventListener() {}
+    },
+    window: {
+      addEventListener() {},
+      location: { replace: url => redirects.push(["window", url]) },
+      top: { location: { replace: url => redirects.push(["top", url]) } }
+    },
+    Shiny: { addCustomMessageHandler(name, callback) { handlers[name] = callback; } }
+  };
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname, "../www/upload-limit.js"), "utf8"), context);
+  handlers["omicsqc-redirect"]("/login");
+  embedded = true;
+  handlers["omicsqc-redirect"]("/login");
+  assert.deepEqual(redirects, [["window", "/login"], ["top", "/login"]]);
+});

@@ -1,0 +1,431 @@
+:root {
+  --cvd-dark: #324f3f;
+  --cvd-medium: #546f60;
+  --cvd-light: #89b79d;
+  --cvd-white: #f2f2e8;
+  --cvd-surface: #f7f8f2;
+  --cvd-text: #2c3e50;
+}
+
+html {
+  font-size: 16px;
+}
+
+body {
+  margin: 0;
+  background: var(--cvd-dark);
+  color: var(--cvd-text);
+  font-family: Manrope, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 1rem;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+.omics-app {
+  width: 100%;
+  padding: 0 1rem 1rem;
+}
+
+.cvdlink-embedded .omics-app {
+  padding-top: 0.5rem;
+}
+
+.cvdlink-embedded .omics-nav {
+  display: none;
+}
+
+.omics-nav {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  min-height: 4rem;
+  margin: 0.65rem 0 1.5rem;
+  padding: 0.75rem 1.35rem;
+  border: 1px solid rgba(50, 79, 63, 0.14);
+  border-radius: 1.15rem;
+  background: var(--cvd-surface);
+  box-shadow: 0 6px 20px rgba(31, 55, 42, 0.1);
+}
+
+.omics-brand,
+.omics-brand:hover,
+.omics-brand:focus {
+  color: var(--cvd-dark);
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: 0.035em;
+  text-decoration: none;
+}
+
+.omics-nav-section {
+  padding: 0.55rem 0.85rem;
+  border-radius: 0.8rem;
+  background: var(--cvd-dark);
+  color: var(--cvd-white);
+  font-weight: 700;
+}
+
+.omics-back-link {
+  margin-left: auto;
+  color: var(--cvd-dark);
+  font-weight: 600;
+}
+
+.omics-back-link:hover {
+  color: var(--cvd-medium);
+}
+
+.omics-main {
+  width: min(100%, 1500px);
+  margin: 0 auto;
+}
+
+.omics-shell {
+  overflow: hidden;
+  border: 1px solid rgba(242, 242, 232, 0.28);
+  border-radius: 8px;
+  background: var(--cvd-surface);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.14);
+}
+
+.omics-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  border-bottom: 1px solid rgba(50, 79, 63, 0.1);
+  background: linear-gradient(135deg, rgba(137, 183, 157, 0.22), rgba(242, 242, 232, 0.86)), var(--cvd-surface);
+}
+
+.omics-eyebrow {
+  margin: 0 0 0.35rem;
+  color: var(--cvd-medium);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.omics-header h1 {
+  margin: 0;
+  color: var(--cvd-dark);
+  font-size: 1.9rem;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.omics-subtitle {
+  max-width: 760px;
+  margin: 0.65rem 0 0;
+  color: #4b5f54;
+  font-size: 0.98rem;
+  line-height: 1.55;
+}
+
+.omics-environment {
+  flex: 0 0 auto;
+  padding: 0.6rem 0.85rem;
+  border: 1px solid rgba(50, 79, 63, 0.14);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--cvd-medium);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.omics-content {
+  padding: 1.5rem;
+}
+
+.omics-notice {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.75rem;
+  margin-bottom: 1.25rem;
+  padding: 0.8rem 1rem;
+  border: 1px solid #d5c997;
+  border-radius: 8px;
+  background: #faf6e5;
+  color: #594d27;
+  line-height: 1.5;
+}
+
+.omics-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.omics-card {
+  min-width: 0;
+  padding: 1.25rem;
+  border: 1px solid rgba(50, 79, 63, 0.16);
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 5px 16px rgba(50, 79, 63, 0.06);
+}
+
+.omics-card h2,
+.omics-results h2,
+.omics-card h3 {
+  margin: 0;
+  color: var(--cvd-dark);
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.omics-card h2,
+.omics-results h2 {
+  font-size: 1.35rem;
+}
+
+.omics-card h3 {
+  font-size: 1.05rem;
+}
+
+.omics-card-intro {
+  margin: 0.6rem 0 1.25rem;
+  color: #4b5f54;
+  line-height: 1.55;
+}
+
+.omics-upload {
+  padding: 1rem;
+  border: 1px dashed rgba(50, 79, 63, 0.35);
+  border-radius: 8px;
+  background: var(--cvd-surface);
+}
+
+.omics-upload .shiny-input-container {
+  width: 100%;
+  max-width: 100%;
+  margin-bottom: 0;
+}
+
+.omics-upload label {
+  color: var(--cvd-dark);
+  font-weight: 700;
+}
+
+.omics-upload .form-control,
+.omics-upload .btn-file {
+  height: 38px;
+  border-color: rgba(50, 79, 63, 0.28);
+}
+
+.omics-upload .form-control {
+  background: #fff;
+  box-shadow: none;
+}
+
+.omics-upload .btn-file {
+  padding: 8px 14px;
+  background: var(--cvd-white);
+  color: var(--cvd-dark);
+  font-weight: 700;
+}
+
+.omics-upload .btn-file:hover {
+  background: #e4eee6;
+}
+
+.omics-upload .progress-bar {
+  background: var(--cvd-medium);
+}
+
+.omics-help {
+  margin: 0.7rem 0 0;
+  color: #596a61;
+  font-size: 0.9rem;
+}
+
+#upload_status,
+#run_status {
+  color: #4b5f54;
+  line-height: 1.5;
+}
+
+#upload_status:not(:empty) {
+  margin-top: 0.9rem;
+}
+
+#run_status:not(:empty) {
+  margin-top: 1rem;
+  padding: 0.8rem 1rem;
+  border-left: 3px solid var(--cvd-medium);
+  border-radius: 4px;
+  background: var(--cvd-surface);
+  color: var(--cvd-dark);
+  font-weight: 700;
+}
+
+.omics-actions,
+.omics-downloads {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  align-items: center;
+}
+
+.omics-actions {
+  margin-top: 1rem;
+}
+
+.omics-app .btn {
+  min-height: 38px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  white-space: normal;
+}
+
+.omics-app #run {
+  padding: 8px 16px;
+  border-color: var(--cvd-dark);
+  background: var(--cvd-dark);
+  color: #fff;
+}
+
+.omics-app #run:hover:not(:disabled) {
+  border-color: var(--cvd-medium);
+  background: var(--cvd-medium);
+}
+
+.omics-app #run:disabled {
+  opacity: 0.55;
+}
+
+.omics-example .btn,
+.omics-downloads .btn {
+  padding: 8px 14px;
+  border-color: rgba(50, 79, 63, 0.3);
+  background: #fff;
+  color: var(--cvd-dark);
+}
+
+.omics-example .btn:hover,
+.omics-downloads .btn:hover {
+  border-color: var(--cvd-medium);
+  background: #eaf1eb;
+  color: var(--cvd-dark);
+}
+
+.omics-guidance ul {
+  margin: 1rem 0;
+  padding-left: 1.3rem;
+  color: #4b5f54;
+  line-height: 1.55;
+}
+
+.omics-guidance li + li {
+  margin-top: 0.5rem;
+}
+
+.omics-guidance-note {
+  margin: 0;
+  padding-top: 0.9rem;
+  border-top: 1px solid rgba(50, 79, 63, 0.12);
+  color: var(--cvd-dark);
+  font-weight: 600;
+}
+
+.omics-results {
+  margin-top: 1.5rem;
+}
+
+.omics-results-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.omics-results-header p:not(.omics-eyebrow) {
+  margin: 0.5rem 0 0;
+  color: #4b5f54;
+}
+
+.omics-results-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 520px), 1fr));
+  gap: 1.25rem;
+}
+
+.omics-result-card h3 {
+  margin-bottom: 0.9rem;
+}
+
+.omics-table-scroll {
+  max-width: 100%;
+  max-height: 28rem;
+  overflow: auto;
+}
+
+.omics-table-scroll table {
+  margin-bottom: 0;
+  font-size: 0.9rem;
+}
+
+.omics-table-scroll th {
+  color: var(--cvd-dark);
+  background: #eaf1eb;
+}
+
+.omics-table-scroll .table > thead > tr > th,
+.omics-table-scroll .table > tbody > tr > td {
+  padding: 0.6rem 0.75rem;
+  border-color: rgba(50, 79, 63, 0.15);
+  vertical-align: top;
+}
+
+.omics-app a:focus-visible,
+.omics-app button:focus-visible,
+.omics-app input:focus-visible,
+.omics-table-scroll:focus-visible,
+.omics-upload .btn-file:focus-within {
+  outline: 3px solid var(--cvd-medium);
+  outline-offset: 2px;
+}
+
+@media (max-width: 768px) {
+  .omics-app {
+    padding: 0 0.5rem 0.5rem;
+  }
+
+  .omics-nav {
+    margin: 0.5rem 0 0.75rem;
+    padding: 0.65rem 0.8rem;
+    gap: 0.75rem;
+    border-radius: 0.9rem;
+  }
+
+  .omics-header,
+  .omics-content {
+    padding: 1rem;
+  }
+
+  .omics-workspace {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .omics-nav {
+    flex-wrap: wrap;
+  }
+
+  .omics-brand {
+    font-size: 1.05rem;
+  }
+
+  .omics-header {
+    flex-wrap: wrap;
+  }
+
+  .omics-header h1 {
+    font-size: 1.6rem;
+  }
+}

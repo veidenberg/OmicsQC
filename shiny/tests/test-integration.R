@@ -41,7 +41,15 @@ test_that("the Shiny app directory serves the OmicsQC UI", {
   app <- shiny::shinyAppDir(file.path(root, "shiny"))
   response <- app$httpHandler(list(PATH_INFO = "/", REQUEST_METHOD = "GET"))
   expect_equal(response$status, 200)
-  expect_match(response$content, "OmicsQC integration test", fixed = TRUE)
+  expect_match(response$content, "<title>OmicsQC</title>", fixed = TRUE)
+  expect_false(grepl("integration test", response$content, ignore.case = TRUE))
+  expect_match(response$content, 'src="embedding.js"', fixed = TRUE)
+  expect_match(response$content, 'href="omicsqc.css"', fixed = TRUE)
+  expect_match(response$content, 'src="upload-limit.js"', fixed = TRUE)
+  for (id in c("assay", "run", "upload_status", "run_status", "example_link", "result_ui")) {
+    expect_match(response$content, paste0('id="', id, '"'), fixed = TRUE)
+  }
+  expect_match(response$content, "Test data only", fixed = TRUE)
   expect_false(grepl("No UI defined", response$content, fixed = TRUE))
 })
 
@@ -132,6 +140,10 @@ test_that("a Shiny session runs QC, downloads results and clears stale state", {
     expect_identical(state$result$status, "pass")
     expect_null(state$error)
     expect_null(manager$owner)
+    pass_ui <- output$result_ui$html
+    expect_match(pass_ui, "omics-table-scroll", fixed = TRUE)
+    expect_match(pass_ui, 'id="dataset_qc"', fixed = TRUE)
+    expect_match(pass_ui, "Download QCed assay", fixed = TRUE)
 
     cookie <- paste0(cookie_name, "=", cookie_secret)
     request <- list(HTTP_COOKIE = cookie)
@@ -161,6 +173,8 @@ test_that("a Shiny session runs QC, downloads results and clears stale state", {
     wait_for_worker(session, state)
     expect_identical(state$result$status, "fail")
     expect_false("assay_qc_harmonized.tsv" %in% state$result$files)
+    expect_match(output$result_ui$html, "Download all available outputs", fixed = TRUE)
+    expect_false(grepl("Download QCed assay", output$result_ui$html, fixed = TRUE))
     archive <- test_downloads$archive(NULL, request)$content$file
     expect_true("built_in_checks.tsv" %in% zip::zip_list(archive)$filename)
 

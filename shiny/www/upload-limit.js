@@ -23,7 +23,8 @@ Shiny.addCustomMessageHandler("omicsqc-run-button", function (state) {
 });
 
 Shiny.addCustomMessageHandler("omicsqc-redirect", function (url) {
-  window.location.replace(url);
+  const target = document.documentElement.classList.contains("cvdlink-embedded") ? window.top : window;
+  target.location.replace(url);
 });
 
 Shiny.addCustomMessageHandler("omicsqc-disable-upload", function (disabled) {
