@@ -39,7 +39,7 @@ least `source_feature_id` and `target_feature_id` columns.
 library(OmicsQC)
 
 result <- run_qc_pipeline(
-  matrix_path = system.file("tmp", "extdata", "example_assay.tsv", package = "OmicsQC")
+  matrix_path = system.file("extdata", "example_assay.tsv", package = "OmicsQC")
 )
 
 print(result)
@@ -168,8 +168,91 @@ available and records mapped, unmapped, and ambiguous features in audit outputs.
 You can also run the pipeline directly:
 
 ```sh
-Rscript scripts/run_qc.R tmp/extdata/example_assay.tsv qc-output [rule.yaml ...]
+Rscript scripts/run_qc.R inst/extdata/example_assay.tsv qc-output [rule.yaml ...]
 ```
+
+## CVDLink integration test
+
+The `shiny/` application is a local integration-test interface for the
+existing default QC pipeline. It is not a clinical decision system. Use only
+synthetic or appropriately de-identified test data; the CERTH test stack uses
+HTTP and does not provide production access controls.
+
+The test interface accepts one tab-separated assay of at most 500 MiB
+(524,288,000 bytes), runs one background QC job at a time, and offers the HTML
+report, the QCed assay when available, and a ZIP of the available diagnostics.
+Input-format failures and validate failures are displayed; a failed QC run can
+still have diagnostic downloads. A thrown error does not reuse an earlier run.
+Advanced settings, feature linking and custom rule uploads are not exposed.
+
+The following assumes OmicsQC and `CVDLink` are sibling directories and that the
+OmicsQC proxy configuration and tool registration have been added to the CERTH
+test stack:
+
+```sh
+# From the OmicsQC repository
+docker network inspect certh-cvdlink-test-net >/dev/null 2>&1 || \
+  docker network create certh-cvdlink-test-net
+
+cd ../CVDLink/certh-cvdlink
+docker compose up --build -d
+
+cd ../../OmicsQC
+docker compose -f compose.cvdlink.yaml up --build -d
+docker exec certh-cvdlink-rproxy-integration-test sh -c 'nginx -t && nginx -s reload'
+```
+
+Create a test account and log in at `http://localhost`, then open
+`http://localhost/omicsqc/` manually. Tool cards are not implemented in the
+test frontend. `http://localhost/api/v1/external-tools/all` should list
+`omicsqc` in its `data` array. The app provides a small synthetic example for
+testing.
+
+The app's internal authentication endpoint is configured by `OMICSQC_AUTH_URL`
+in `compose.cvdlink.yaml`; its default targets the CERTH test backend. The app
+checks the captured browser cookie at Shiny session startup and redirects
+unauthenticated sessions to `/login`. The test backend does not revoke a JWT
+when logging out, and an already-open Shiny session is not immediately
+revoked or continuously reauthenticated. Downloads additionally require a
+session-specific browser cookie and a current successful authentication check;
+a copied download URL alone is insufficient. Registry roles are not enforced.
+Closing and reopening the app starts a new authentication check. Do not use
+this PoC for sensitive or production data.
+
+Uploads and outputs use a private directory per Shiny session. Closing the
+session cancels its worker and removes session files; the container's temporary
+storage is a 4 GiB tmpfs that is cleared when the container stops. This tmpfs
+consumes host memory as used, in addition to the memory required by R. The
+500 MiB input cap is not a promise that a large or wide dataset will fit in
+available memory or run quickly. If the single worker is busy, another run
+must be retried after it finishes.
+
+To stop only the OmicsQC service, from the OmicsQC repository:
+
+```sh
+docker compose -f compose.cvdlink.yaml down
+```
+
+Do not remove the shared external network or reset the CERTH database as part
+of normal OmicsQC cleanup. See the CERTH integration guide for the proxy and
+registry formats and how to operate the rest of the test stack.
+
+### Development checks
+
+The package tests use `testthat`. The Shiny integration tests additionally
+need `shiny`, `httr2`, `processx`, `zip`, `openssl`, and Node.js for the local
+authentication stub. With the OmicsQC package installed, run:
+
+```sh
+OMICSQC_SOURCE="$PWD" Rscript -e \
+  'testthat::test_file("shiny/tests/test-integration.R", reporter = "summary", stop_on_failure = TRUE)'
+node --test shiny/tests/test-upload-limit.cjs
+```
+
+The container installs its runtime dependencies from the dated CRAN snapshot
+specified in the Dockerfile. The Shiny tests exercise the real background
+worker with synthetic fixtures, upload-size boundaries, authentication,
+download isolation, error handling and session cleanup.
 
 ## Contact
 

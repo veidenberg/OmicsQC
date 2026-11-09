@@ -1,4 +1,11 @@
 ^\.git$
 ^\.gitignore$
+^\.DS_Store$
+^\.tmp.*$
 ^OmicsQC\.Rcheck$
 ^scripts$
+^tmp$
+^shiny$
+^Dockerfile$
+^compose\.cvdlink\.yaml$
+^\.dockerignore$

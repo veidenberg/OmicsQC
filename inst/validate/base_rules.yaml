@@ -1,0 +1,29 @@
+rules:
+  - expr: total_signal > 0
+    name: total_signal_positive
+    label: Positive total signal
+    description: |
+      Every sample should have non-zero total signal.
+    meta:
+      severity: error
+  - expr: detected_features > 0
+    name: detected_features_positive
+    label: Detected features present
+    description: |
+      Every sample should have at least one detected feature.
+    meta:
+      severity: error
+  - expr: missing_fraction <= 0.50
+    name: missing_fraction_half
+    label: Missing fraction below fifty percent
+    description: |
+      Samples should not exceed 50% missing values.
+    meta:
+      severity: warning
+  - expr: zero_fraction <= 0.95
+    name: zero_fraction_cap
+    label: Zero fraction below ninety five percent
+    description: |
+      Samples should not be almost entirely zero.
+    meta:
+      severity: warning

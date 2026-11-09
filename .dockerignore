@@ -1,0 +1,12 @@
+*
+!DESCRIPTION
+!NAMESPACE
+!R/
+!R/**
+!inst/
+!inst/**
+!shiny/
+!shiny/**
+shiny/tests/
+shiny/tests/**
+!Dockerfile

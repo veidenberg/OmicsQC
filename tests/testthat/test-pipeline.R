@@ -7,6 +7,10 @@ test_that("clean fixture passes end-to-end with default rules", {
   expect_equal(nrow(result$sample_qc), 4)
   expect_equal(nrow(result$feature_qc), 6)
   expect_true(nrow(result$dataset_qc) > 0)
+  expect_length(result$validate$rule_files, 1)
+  expect_true(file.exists(result$validate$rule_files[[1]]))
+  expect_gt(nrow(result$validate$results), 0)
+  expect_equal(nrow(result$validate$config_errors), 0)
   expect_true(all(result$validate$results$status == "pass"))
 })
 
